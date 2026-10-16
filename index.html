@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0d1117">
+<title>SkyRush — Free Crash Game</title>
+<meta name="description" content="Play SkyRush, a free crash-style arcade game with virtual credits. No deposits, no cash prizes, and no real-money betting.">
+<meta name="robots" content="index,follow">
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--muted:#8b949e;--green:#238636;--bright:#3fb950;--red:#ff3b30;--gold:#ff9800}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:#fff;min-height:100vh;padding-bottom:18px}
+button,input{font:inherit}
+button{cursor:pointer}
+header{max-width:520px;margin:auto;background:var(--panel);padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:8px}.plane-logo{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#e53935;box-shadow:0 0 10px #e5393566}.title{font-weight:900;letter-spacing:1px;color:var(--red);font-size:18px}
+.balance{border:1px solid var(--green);background:var(--bg);color:var(--bright);padding:6px 10px;border-radius:20px;font-weight:800;font-size:12px;white-space:nowrap}
+.icon-btn{background:none;border:0;color:#c9d1d9;font-size:20px;padding:3px}
+.header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.withdraw-btn{border:1px solid #b36b00;background:#ff9800;color:#111;font-size:11px;font-weight:900;padding:6px 10px;border-radius:7px}
+.modal-backdrop{position:fixed;inset:0;z-index:20;background:#000b;display:none;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.open{display:flex}
+.withdraw-modal{width:100%;max-width:380px;background:#161b22;border:1px solid #30363d;border-radius:14px;padding:18px;box-shadow:0 16px 50px #0009}
+.withdraw-modal h2{font-size:20px;margin-bottom:8px}
+.withdraw-modal p{font-size:12px;line-height:1.5;color:#c9d1d9;margin-bottom:13px}
+.withdraw-modal label{display:block;font-size:12px;color:#8b949e;margin:10px 0 5px}
+.withdraw-modal input{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:7px;color:#fff;padding:11px;outline:none}
+.modal-actions{display:flex;gap:8px;margin-top:14px}
+.modal-actions button{flex:1;padding:10px;border:0;border-radius:7px;font-weight:800}
+.withdraw-submit{background:#ff9800;color:#111}.withdraw-cancel{background:#30363d;color:#fff}
+main{max-width:520px;margin:auto;padding:8px;display:flex;flex-direction:column;gap:9px}
+.notice{text-align:center;font-size:11px;color:#f0b66b;background:#2b2116;border:1px solid #5a4021;border-radius:7px;padding:7px}
+.signal-card{margin:10px 0;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:9px}.signal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.signal-title{font-size:13px;font-weight:900;letter-spacing:.4px}.signal-pill{font-size:11px;font-weight:900;border-radius:20px;padding:5px 9px;background:#21262d;color:#c9d1d9;border:1px solid #30363d}.signal-pill.low{color:#58a6ff;border-color:#1f4268}.signal-pill.mid{color:#f0b66b;border-color:#6b4b1b}.signal-pill.high{color:#3fb950;border-color:#1b4b27}.signal-info{font-size:11px;color:#8b949e;line-height:1.45}.signal-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.signal-metric{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:9px}.signal-metric span{display:block;font-size:10px;color:#8b949e;margin-bottom:4px}.signal-metric strong{font-size:16px}.history{display:flex;gap:6px;overflow:auto;scrollbar-width:none;padding:2px 0}.history::-webkit-scrollbar{display:none}
+.badge{flex:none;border:1px solid var(--line);background:#21262d;padding:4px 8px;border-radius:12px;font-size:11px;font-weight:800}.low{color:#58a6ff;border-color:#1f4268}.mid{color:#bc8cff;border-color:#584082}.high{color:#3fb950;border-color:#1b4b27}.mega{color:#f0883e;border-color:#693816}
+.stage{height:230px;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:12px;background:radial-gradient(ellipse at 50% 100%,#13212b 0%,#0b0f15 70%);display:grid;place-items:center}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+.stage-overlay{position:relative;z-index:2;text-align:center;pointer-events:none;text-shadow:0 2px 9px #000}
+.multiplier{font-size:clamp(38px,10vw,52px);font-weight:950;letter-spacing:1px}.status{font-size:12px;font-weight:800;letter-spacing:1.3px;color:var(--muted);margin-top:4px}
+.online{position:absolute;right:9px;top:9px;z-index:3;background:#161b22cc;border:1px solid var(--line);padding:4px 8px;border-radius:14px;font-size:11px;color:#c9d1d9}.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--bright);margin-right:5px}
+.panels{display:grid;grid-template-columns:1fr;gap:9px}
+.bet-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;display:flex;flex-direction:column;gap:10px}
+.card-head{display:flex;justify-content:space-between;align-items:center}.panel-name{font-size:12px;color:#c9d1d9;font-weight:800}
+.mode-tabs{display:flex;background:var(--bg);border-radius:7px;padding:2px}.tab{border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:700;padding:5px 11px;border-radius:5px}.tab.active{background:#30363d;color:white}
+.controls{display:flex;align-items:center;gap:8px}.amount{display:flex;align-items:center;width:145px;flex:none;background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:hidden;height:44px}.amount button{width:34px;height:100%;border:0;background:transparent;color:#c9d1d9;font-size:19px}.amount input{width:75px;min-width:0;text-align:center;background:transparent;color:white;border:0;outline:0;font-size:13px;font-weight:800}
+.action{flex:1;min-width:0;height:44px;border:0;border-radius:8px;background:var(--green);box-shadow:0 3px 0 #195f25;color:white;font-size:14px;font-weight:900;line-height:1.2}.action small{font-size:10px;font-weight:700}.action.cancel{background:#da3633;box-shadow:0 3px 0 #9e2523}.action.cash{background:var(--gold);box-shadow:0 3px 0 #b36b00;color:#111}.action.won{background:#176b36;box-shadow:0 3px 0 #104a25}
+.presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.preset{background:#21262d;border:1px solid var(--line);color:#c9d1d9;border-radius:6px;padding:6px 0;font-size:12px;font-weight:700}
+.auto-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.auto-label{display:flex;align-items:center;gap:6px}.auto-input{width:58px;background:var(--bg);border:1px solid var(--line);border-radius:5px;color:white;padding:4px;text-align:center;font-size:12px}
+.footer{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:7px}.stats{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted)}.stats b{color:var(--bright)}.track{height:6px;background:#21262d;border-radius:5px;overflow:hidden}.bar{height:100%;width:65%;background:linear-gradient(90deg,#238636,#3fb950);transition:width .3s}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:10;background:#30363d;color:white;padding:10px 14px;border-radius:9px;font-size:13px;max-width:90%;text-align:center;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:430px){.panels{grid-template-columns:1fr 1fr}.bet-card{padding:10px}.amount{width:100%;flex:1}.amount input{flex:1;width:40px}.controls{flex-direction:column;align-items:stretch}.action{width:100%;flex:none}.stage{height:250px}}
+
+.launch-info,.policy{margin:12px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px;line-height:1.55}
+.launch-info h2,.policy h2{font-size:14px;margin-bottom:6px;color:#fff}
+.launch-info p,.policy p{font-size:12px;color:#c9d1d9;margin-top:6px}
+.ad-slot{min-height:78px;margin:12px 0;border:1px dashed #48515c;border-radius:9px;background:#111820;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;padding:12px;color:#8b949e;font-size:11px}
+.ad-slot strong{font-size:12px;color:#c9d1d9}.site-links{display:flex;justify-content:center;flex-wrap:wrap;gap:14px;padding:10px 4px;font-size:12px}.site-links a{color:#8ab4f8;text-decoration:none}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="plane-logo">✈</div><div class="title">SKYRUSH</div></div>
+  <div class="header-actions">
+    <div class="balance" id="balance">KES 50,000.00</div>
+  </div>
+  <button class="icon-btn" id="sound" aria-label="Toggle sound">🔊</button>
+</header>
+<main>
+  <div class="history" id="history"><span class="badge low">1.45x</span><span class="badge mid">2.30x</span><span class="badge low">1.02x</span><span class="badge mega">12.40x</span><span class="badge low">1.15x</span></div>
+  <section class="signal-card" aria-label="Simulated multiplier signals">
+    <div class="signal-head"><div class="signal-title">📡 MULTIPLIER SIGNAL</div><span class="signal-pill low" id="signalLevel">LOW</span></div>
+    <div class="signal-metrics"><div class="signal-metric"><span>Suggested target</span><strong id="signalTarget">1.50x</strong></div><div class="signal-metric"><span>Recent average</span><strong id="signalAverage">3.58x</strong></div></div>
+    <div class="signal-info" id="signalNote">Based on recent rounds in this game. This is a historical estimate, not a prediction or guarantee of the next crash.</div>
+  </section>
+  <section class="stage">
+    <canvas id="canvas"></canvas>
+    <div class="online"><span class="dot"></span><span id="players">384</span> players</div>
+    <div class="stage-overlay"><div class="multiplier" id="multiplier">1.00x</div><div class="status" id="status">NEXT ROUND IN 4.0s</div></div>
+  </section>
+  <div class="panels">
+    <section class="bet-card" data-panel="1">
+      <div class="card-head"><span class="panel-name">BET 1</span><div class="mode-tabs"><button class="tab active" type="button">Bet</button><button class="tab" type="button" data-auto="1">Auto</button></div></div>
+      <div class="controls"><div class="amount"><button type="button" data-adjust="-50" aria-label="Decrease bet">−</button><input id="amount1" inputmode="decimal" value="100" aria-label="Bet 1 amount"><button type="button" data-adjust="50" aria-label="Increase bet">+</button></div><button class="action" id="action1" type="button">BET<br><small>KES 100.00</small></button></div>
+      <div class="presets"><button class="preset" data-preset="100">100</button><button class="preset" data-preset="200">200</button><button class="preset" data-preset="500">500</button><button class="preset" data-preset="1000">1k</button></div>
+      <div class="auto-row"><label class="auto-label"><input type="checkbox" id="autoCheck1"> Auto cash out</label><span><input class="auto-input" id="autoValue1" inputmode="decimal" value="2.00" aria-label="Bet 1 auto cashout multiplier"> x</span></div>
+    </section>
+    <section class="bet-card" data-panel="2">
+      <div class="card-head"><span class="panel-name">BET 2</span><div class="mode-tabs"><button class="tab active" type="button">Bet</button><button class="tab" type="button" data-auto="2">Auto</button></div></div>
+      <div class="controls"><div class="amount"><button type="button" data-adjust="-50" aria-label="Decrease bet">−</button><input id="amount2" inputmode="decimal" value="200" aria-label="Bet 2 amount"><button type="button" data-adjust="50" aria-label="Increase bet">+</button></div><button class="action" id="action2" type="button">BET<br><small>KES 200.00</small></button></div>
+      <div class="presets"><button class="preset" data-preset="100">100</button><button class="preset" data-preset="200">200</button><button class="preset" data-preset="500">500</button><button class="preset" data-preset="1000">1k</button></div>
+      <div class="auto-row"><label class="auto-label"><input type="checkbox" id="autoCheck2"> Auto cash out</label><span><input class="auto-input" id="autoValue2" inputmode="decimal" value="5.00" aria-label="Bet 2 auto cashout multiplier"> x</span></div>
+    </section>
+  </div>
+  <section class="footer"><div class="stats"><span>Simulated players: <b id="activeBets">248 / 384</b></span><span id="pool">Virtual pool: 34,820</span></div><div class="track"><div class="bar" id="bar"></div></div></section>
+  <section class="launch-info">
+    <h2>Play SkyRush for free</h2>
+    <p>Tap BET before a round starts, then cash out before the plane disappears to grow your virtual balance. Auto cash-out is optional. This is an arcade game for entertainment only.</p>
+    <p><strong>Virtual credits only:</strong> credits have no cash value. There are no deposits, withdrawals, prizes, or real-money bets.</p>
+  </section>
+  <div class="ad-slot" aria-label="Advertising space"><strong>Advertisement space</strong><span>Ad placement can be added after your site and ad account are approved.</span></div>
+  <nav class="site-links" aria-label="Site information"><a href="#how-to-play">How to play</a><a href="#privacy">Privacy</a><a href="#terms">Terms</a><a href="mailto:contact@example.com">Contact</a></nav>
+  <section class="policy" id="how-to-play"><h2>How to play</h2><p>Choose a virtual bet amount and press BET before the countdown ends. During a flight, press CASH OUT before the crash to receive virtual credits based on the displayed multiplier. If the round crashes first, the active virtual bet is lost. Results are simulated locally and do not predict real-world games.</p></section>
+  <section class="policy" id="privacy"><h2>Privacy</h2><p>This version does not ask you to create an account or submit payment details. Game activity and the virtual balance run in your browser and may reset when you reload the page. If advertising or analytics are added later, update this notice to identify the providers and explain their data practices before launch.</p></section>
+  <section class="policy" id="terms"><h2>Terms of use</h2><p>SkyRush is provided for entertainment and practice only. All balances and outcomes are simulated, have no monetary value, and cannot be exchanged or withdrawn. Do not use the game as financial or gambling advice. Use of the site means you accept these terms.</p></section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const money = n => n.toLocaleString("en-KE",{minimumFractionDigits:2,maximumFractionDigits:2});
+  let balance = 50000, state = "COUNTDOWN", multiplier = 1, crashPoint = 1, roundStart = 0, countdownStart = performance.now(), soundOn = false, lastTick = 0, toastTimer;
+  const bets = {
+    1:{queued:false,active:false,cashed:false,amount:100},
+    2:{queued:false,active:false,cashed:false,amount:200}
+  };
+  const canvas=$("canvas"),ctx=canvas.getContext("2d");
+  function resize(){const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(r.width*dpr));canvas.height=Math.max(1,Math.floor(r.height*dpr));ctx.setTransform(dpr,0,0,dpr,0,0);drawScene(0)}
+  window.addEventListener("resize",resize);
+  function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2100)}
+  function tone(freq=500,duration=.09){if(!soundOn)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const a=tone.audio||(tone.audio=new AC());if(a.state==="suspended")a.resume();const o=a.createOscillator(),g=a.createGain();o.frequency.value=freq;o.type="sine";g.gain.setValueAtTime(.06,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+duration);o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+duration)}catch(e){}}
+  $("sound").addEventListener("click",()=>{soundOn=!soundOn;$("sound").textContent=soundOn?"🔊":"🔇";if(soundOn)tone(600)});
+  function readAmount(id){const input=$("amount"+id);let n=Number(String(input.value).replace(/,/g,""));if(!Number.isFinite(n))n=0;n=Math.round(n*100)/100;return n}
+  function updateBalance(){$("balance").textContent="KES "+money(balance)}
+  function updateButton(id){
+    const b=bets[id],btn=$("action"+id);
+    if(state==="FLYING"&&b.active&&!b.cashed){btn.className="action cash";btn.innerHTML="CASH OUT<br><small>KES "+money(b.amount*multiplier)+"</small>";return}
+    if(b.queued){btn.className="action cancel";btn.innerHTML="CANCEL<br><small>KES "+money(b.amount)+"</small>";return}
+    if(b.cashed){btn.className="action won";btn.innerHTML="WON<br><small>KES "+money(b.amount*multiplier)+"</small>";return}
+    btn.className="action";btn.innerHTML="BET<br><small>KES "+money(readAmount(id))+"</small>";
+  }
+  function setAmount(id,n){n=Math.max(10,Math.min(1000000,Math.round(n*100)/100));$("amount"+id).value=n.toFixed(2);bets[id].amount=n;updateButton(id)}
+  document.querySelectorAll(".bet-card").forEach(card=>{
+    const id=Number(card.dataset.panel);
+    card.querySelectorAll("[data-adjust]").forEach(btn=>btn.addEventListener("click",()=>{if(bets[id].queued||bets[id].active)return;setAmount(id,readAmount(id)+Number(btn.dataset.adjust))}));
+    card.querySelectorAll("[data-preset]").forEach(btn=>btn.addEventListener("click",()=>{if(!bets[id].queued&&!bets[id].active)setAmount(id,Number(btn.dataset.preset))}));
+    $("amount"+id).addEventListener("change",()=>{if(!bets[id].queued&&!bets[id].active)setAmount(id,readAmount(id))});
+    card.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("click",()=>{card.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));tab.classList.add("active");if(tab.dataset.auto){$("autoCheck"+id).checked=true;toast("Auto cash out enabled for Bet "+id)}else{$("autoCheck"+id).checked=false}}));
+    $("action"+id).addEventListener("click",()=>handleAction(id));
+  });
+  function handleAction(id){
+    const b=bets[id];
+    if(state==="FLYING"){
+      if(b.active&&!b.cashed)cashOut(id);
+      else if(!b.active)toast("You can place a bet before the next round.");
+      return;
+    }
+    if(state==="CRASHED"){toast("Next round is starting soon.");return}
+    if(b.queued){b.queued=false;updateButton(id);tone(300);return}
+    const amount=readAmount(id);
+    if(!Number.isFinite(amount)||amount<10){toast("Minimum bet is KES 10.");return}
+    const otherQueuedOrActive=Object.keys(bets).some(k=>Number(k)!==id&&(bets[k].queued||bets[k].active&&!bets[k].cashed));
+    const reserved=Object.keys(bets).reduce((sum,k)=>sum+(bets[k].queued||bets[k].active&&!bets[k].cashed?bets[k].amount:0),0);
+    if(balance-reserved<amount){toast("Not enough available virtual balance.");return}
+    b.amount=amount;b.queued=true;updateButton(id);tone(430);toast("Bet "+id+" queued for the next round.");
+  }
+  function cashOut(id){
+    const b=bets[id];if(!b.active||b.cashed||state!=="FLYING")return;
+    b.cashed=true;const win=b.amount*multiplier;balance+=win;updateBalance();updateButton(id);tone(850,.2);toast("Bet "+id+" cashed out at "+multiplier.toFixed(2)+"x · KES "+money(win));
+  }
+  function chooseCrashPoint(){
+    // Demo-only random outcome; not connected to any real game.
+    const r=Math.random();
+    if(r<.10)return 1+Math.random()*.25;
+    const v=0.99/(1-r);
+    return Math.max(1.01,Math.min(30,Math.floor(v*100)/100));
+  }
+  function startRound(now){
+    state="FLYING";multiplier=1;crashPoint=chooseCrashPoint();roundStart=now;
+    Object.keys(bets).forEach(k=>{const b=bets[k];b.active=b.queued;b.queued=false;b.cashed=false;if(b.active){balance-=b.amount}updateButton(Number(k))});
+    updateBalance();$("status").textContent="PLANE IN FLIGHT";tone(520);
+  }
+  function endRound(){
+    state="CRASHED";$("status").textContent="FLEW AWAY AT "+multiplier.toFixed(2)+"x";$("status").style.color="#ff6b6b";
+    addHistory(multiplier);tone(180,.3);
+    Object.keys(bets).forEach(k=>{const b=bets[k];if(b.active&&!b.cashed){b.active=false;const btn=$("action"+k);btn.className="action cancel";btn.innerHTML="LOST<br><small>KES "+money(b.amount)+"</small>"}else if(!b.queued)updateButton(Number(k))});
+    setTimeout(()=>{if(state==="CRASHED"){state="COUNTDOWN";countdownStart=performance.now();$("status").style.color="";Object.keys(bets).forEach(k=>{if(!bets[k].queued){bets[k].cashed=false}updateButton(Number(k))})}},1800);
+  }
+  function addHistory(v){const el=document.createElement("span");el.className="badge "+(v<2?"low":v<10?"mid":v<20?"high":"mega");el.textContent=v.toFixed(2)+"x";$("history").prepend(el);while($("history").children.length>18)$("history").lastElementChild.remove();updateSignal()}
+  function updateSignal(){
+    const values=Array.from($("history").children).slice(0,8).map(el=>parseFloat(el.textContent)).filter(n=>Number.isFinite(n)&&n>0);
+    if(!values.length)return;
+    const avg=values.reduce((a,b)=>a+b,0)/values.length;
+    // This classifies recent history only; it cannot forecast a random crash.
+    let level,target,cls,note;
+    if(avg<2){level="LOW";target="1.50x";cls="low";note="Recent rounds averaged below 2.00x. A low target is shown for reference only; the next round may crash at any multiplier."}
+    else if(avg<4){level="MEDIUM";target="2.00x";cls="mid";note="Recent rounds averaged from 2.00x to 3.99x. This is a summary of past rounds, not a reliable signal for the next one."}
+    else{level="HIGH";target="2.00x";cls="high";note="Recent rounds had a higher average. That does not mean a high multiplier is due; the next round remains unpredictable."}
+    const pill=$("signalLevel");pill.textContent=level;pill.className="signal-pill "+cls;
+    $("signalTarget").textContent=target;$("signalAverage").textContent=avg.toFixed(2)+"x";$("signalNote").textContent=note;
+  }
+  function drawScene(t){
+    const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle="rgba(110,140,160,.13)";ctx.lineWidth=1;
+    for(let x=0;x<w;x+=35){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+    for(let y=15;y<h;y+=30){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+    if(state==="FLYING"){
+      const p=Math.min(1,Math.log(multiplier)/Math.log(Math.max(crashPoint,1.01)));
+      const x=25+p*(w*.62),y=h-25-p*(h*.65);
+      ctx.beginPath();ctx.moveTo(0,h-12);ctx.quadraticCurveTo(w*.35,h-20,x,y);ctx.strokeStyle="#ff4d55";ctx.lineWidth=3;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-9,y+22);ctx.lineTo(x+2,y+15);ctx.lineTo(x+13,y+17);ctx.closePath();ctx.fillStyle="#ff4d55";ctx.fill();
+      ctx.save();ctx.translate(x,y);ctx.rotate(-.45);ctx.font="25px sans-serif";ctx.fillText("✈", -10,-8);ctx.restore();
+    }else{
+      ctx.beginPath();ctx.moveTo(0,h-12);ctx.lineTo(w*.28,h-12);ctx.strokeStyle="rgba(255,77,85,.4)";ctx.lineWidth=2;ctx.stroke();
+    }
+  }
+  function frame(now){
+    if(state==="COUNTDOWN"){
+      const remaining=Math.max(0,4-(now-countdownStart)/1000);
+      $("multiplier").textContent="1.00x";$("multiplier").style.color="#fff";$("status").textContent="NEXT ROUND IN "+remaining.toFixed(1)+"s";
+      if(remaining<=0)startRound(now);
+    }else if(state==="FLYING"){
+      const elapsed=(now-roundStart)/1000;
+      multiplier=Math.exp(elapsed*.19);multiplier=Math.min(multiplier,999);
+      $("multiplier").textContent=multiplier.toFixed(2)+"x";$("multiplier").style.color=multiplier>=2?"#3fb950":"#fff";
+      $("status").textContent="PLANE IN FLIGHT";
+      Object.keys(bets).forEach(k=>{const b=bets[k];if(b.active&&!b.cashed&&$("autoCheck"+k).checked){const target=Number($("autoValue"+k).value);if(Number.isFinite(target)&&target>=1&&multiplier>=target)cashOut(Number(k))}updateButton(Number(k))});
+      if(now-lastTick>1000){lastTick=now;tone(600,.035)}
+      if(multiplier>=crashPoint){multiplier=crashPoint;$("multiplier").textContent=multiplier.toFixed(2)+"x";endRound()}
+    }
+    const queued=Object.values(bets).filter(b=>b.queued).length,active=Object.values(bets).filter(b=>b.active&&!b.cashed).length;
+    $("activeBets").textContent=(248+queued+active)+" / 384";$("players").textContent=String(370+Math.floor(Math.random()*29));$("pool").textContent="KES "+(34820+queued*100+active*200).toLocaleString("en-KE");
+    $("bar").style.width=Math.min(95,62+queued*3+active*4)+"%";
+    drawScene(now);requestAnimationFrame(frame);
+  }
+  updateBalance();updateSignal();Object.keys(bets).forEach(k=>updateButton(Number(k)));resize();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
